@@ -18,7 +18,7 @@ process(int r, const char* imsname, const char* imdname)
     exit(EXIT_FAILURE);
   }
   cout<< "\n############### exercice : median-filter ##############\n"<<endl;
-  //Read the image and display it whit the size
+  //Read the image
   Mat ims = imread(imsname, 0);
   Size s = ims.size();
 

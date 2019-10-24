@@ -7,13 +7,22 @@
 using namespace cv;
 using namespace std;
 
+int
+distance_computation(int sigma){
+  //This compute the distance max two pixels of different patchs
+  int x=0;
+  double g_value;
+  do{
+    g_value=exp(-pow(x,2)/(2*pow(sigma,2)));
+    x++;
+  } while (g_value>0.1);
+
+  return x-1;
+}
+
 void
 process(int sigma_s, int sigma_g, const char* imsname, const char* imdname)
 {
-  (void) sigma_s;
-  (void) sigma_g;
-  (void) imsname;
-  (void) imdname;
   //Check the existence of the file, if the file doesn't exist the programme stop
   fstream infile(imsname);
   if (infile.good() == false){
@@ -21,9 +30,57 @@ process(int sigma_s, int sigma_g, const char* imsname, const char* imdname)
     exit(EXIT_FAILURE);
   }
   cout<< "\n############### exercice : bilateral ##############\n"<<endl;
-  //Read the image and display it whit the size
+  //Read the image and display it
   Mat ims = imread(imsname, 0);
-  // Size s = ims.size();
+  imshow("Initial",ims);
+
+  Size s = ims.size();
+
+  //Variables declaration and initialization
+  Mat imd(s,CV_8UC1);
+  int s_distance = distance_computation(sigma_s);
+  cout <<"The distance is"<<s_distance<<endl;
+  // double g_distance_max = distance_computation(sigma_g);
+  int p,q,pi,pj,qi,qj,distance_pq=0;
+  double sum_num, sum_denom =0;
+
+  float Gs_values[s_distance];
+  float Gc_values[256];
+
+  for(int c=0; c<=s_distance; c++){
+    Gs_values[c] = exp(-pow(c,2)/(2*pow(sigma_s,2)));
+  }
+  for(int a=0; a<256; a++){
+    Gc_values[a] = exp(-pow(a,2)/(2*pow(sigma_g,2)));
+  }
+
+  for(int i=0; i<s.height; i++){
+    for(int j=0; j<s.width; j++){
+      sum_num=0;
+      sum_denom =0;
+      pi=i;
+      pj=j;
+      for(int l=-s_distance; l<=s_distance; l++){
+        for(int m=-s_distance; m<=s_distance; m++){
+          if(i+l>=0 && j+m>=0 && i+l<s.height && j+m<s.width){
+            qi=i+l;
+            qj=j+m;
+            distance_pq = abs(pi-qi)+ abs(pj-qj);
+            if( distance_pq<= s_distance){
+              p=ims.at<uchar>(pi,pj);
+              q=ims.at<uchar>(qi,qj);
+              sum_num+=Gs_values[distance_pq]*Gc_values[abs(p-q)]*q;
+              sum_denom +=Gs_values[distance_pq]*Gc_values[abs(p-q)];
+            }
+          }
+        }
+      }
+      imd.at<uchar>(pi,pj)=sum_num/sum_denom;
+    }
+  }
+  imwrite(imdname,imd);
+
+  waitKey(0);
 
 }
 
