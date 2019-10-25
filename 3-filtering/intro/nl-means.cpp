@@ -39,22 +39,28 @@ process(int sigma, const char* imsname, const char* imdname)
   int patchs_sum, pi, pj, qi, qj, Ip, Iq, nb_in_patch=0;
   double w, sum_w, sum_w_means;
 
+  //Compute I'(p)
   for(int i=0; i<s.height; i++){
     for(int j=0; j<s.width; j++){
+      //Retrieve the pixel p coordinates
       pi=i;
       pj=j;
-      sum_w=0;
-      sum_w_means=0;
+      sum_w=0;//Denominator to calculate I'(p)
+      sum_w_means=0;//Numerator to calculate I'(p)
+      //Retrieve the pixel p neighbors coordinates
       for(int l=-window_radius; l<=window_radius; l++){
         for(int m=-window_radius; m<=window_radius; m++){
           nb_in_patch=0;
           patchs_sum =0;
           w=0;
+          //Check if we are still in the image
           if(i+l>=0 && j+m>=0 && i+l<s.height && j+m<s.width){
             qi=i+l;
             qj=j+m;
+            //Retrieve the patch coordinates of p and q
             for(int u=-patch_radius; u<=patch_radius; u++){
               for(int v=-patch_radius; v<=patch_radius; v++){
+                //Check if we are still in the image
                 if(qi+u>=0 && qj+v>=0 && qi+u<s.height && qj+v<s.width){
                     Ip = ims.ptr<uchar>(pi+u)[pj+v];
                     Iq = ims.ptr<uchar>(qi+u)[qj+v];
@@ -63,6 +69,8 @@ process(int sigma, const char* imsname, const char* imdname)
                 }
               }
             }
+            //Check if the patchs_sum value return a value
+            //For the one the exp is null
             if(patchs_sum <= distance_max){
               w = exp((-patchs_sum/nb_in_patch)/(2*sigma*sigma));
               sum_w += w;
@@ -71,6 +79,7 @@ process(int sigma, const char* imsname, const char* imdname)
           }
         }
       }
+      //Compute the I'(p) value
       imd.ptr<uchar>(pi)[pj]=sum_w_means/sum_w;
     }
   }

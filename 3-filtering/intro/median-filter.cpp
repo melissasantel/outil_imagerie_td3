@@ -30,9 +30,11 @@ process(int r, const char* imsname, const char* imdname)
   int median_value;
 
   //Compute the median value of the pixel neighbor
+  //Retrieve the pixel p coordinates
   for(int i=0;i<s.height; i++){
     for(int j=0; j<s.width; j++){
       vector<int>p_neighbor;
+      //Retrieve the pixel p neighbors coordinates
       for(int l=-r; l<=r; l++){
         for(int m=-r; m<=r; m++){
           if(i+l>=0 && j+m>=0 && i+l<s.height && j+m<s.width){
@@ -40,6 +42,7 @@ process(int r, const char* imsname, const char* imdname)
           }
         }
       }
+      //compute median value
       size_t n_size = p_neighbor.size();
       if (n_size == 0){
         median_value = ims.ptr<uchar>(i)[j];

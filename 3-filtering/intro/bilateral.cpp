@@ -45,26 +45,30 @@ process(int sigma_s, int sigma_g, const char* imsname, const char* imdname)
 
   float Gs_values[s_distance];
   float Gc_values[256];
-
+  //Compute the value in advance of Gs
   for(int c=0; c<=s_distance; c++){
     Gs_values[c] = exp(-pow(c,2)/(2*pow(sigma_s,2)));
   }
+  //Compute the value in advance of Gc
   for(int a=0; a<256; a++){
     Gc_values[a] = exp(-pow(a,2)/(2*pow(sigma_g,2)));
   }
 
   for(int i=0; i<s.height; i++){
     for(int j=0; j<s.width; j++){
+      //Retrieve the pixel p coordinates
       sum_num=0;
       sum_denom =0;
       pi=i;
       pj=j;
+        //Retrieve the pixel p neighbors coordinates
       for(int l=-s_distance; l<=s_distance; l++){
         for(int m=-s_distance; m<=s_distance; m++){
           if(i+l>=0 && j+m>=0 && i+l<s.height && j+m<s.width){
             qi=i+l;
             qj=j+m;
             distance_pq = abs(pi-qi)+ abs(pj-qj);
+            //Check if the distance of pixel is include in the circle
             if( distance_pq<= s_distance){
               p=ims.ptr<uchar>(pi)[pj];
               q=ims.ptr<uchar>(qi)[qj];
