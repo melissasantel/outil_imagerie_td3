@@ -30,17 +30,16 @@ process(int sigma_s, int sigma_g, const char* imsname, const char* imdname)
     exit(EXIT_FAILURE);
   }
   cout<< "\n############### exercice : bilateral ##############\n"<<endl;
-  //Read the image and display it
+  //Read the image
   Mat ims = imread(imsname, 0);
-  imshow("Initial",ims);
 
   Size s = ims.size();
 
   //Variables declaration and initialization
   Mat imd(s,CV_8UC1);
+  Mat imd_ocv(s,CV_8UC1);
+  Mat diff_imd(s,CV_8UC1);
   int s_distance = distance_computation(sigma_s);
-  cout <<"The distance is"<<s_distance<<endl;
-  // double g_distance_max = distance_computation(sigma_g);
   int p,q,pi,pj,qi,qj,distance_pq=0;
   double sum_num, sum_denom =0;
 
@@ -67,19 +66,22 @@ process(int sigma_s, int sigma_g, const char* imsname, const char* imdname)
             qj=j+m;
             distance_pq = abs(pi-qi)+ abs(pj-qj);
             if( distance_pq<= s_distance){
-              p=ims.at<uchar>(pi,pj);
-              q=ims.at<uchar>(qi,qj);
+              p=ims.ptr<uchar>(pi)[pj];
+              q=ims.ptr<uchar>(qi)[qj];
               sum_num+=Gs_values[distance_pq]*Gc_values[abs(p-q)]*q;
               sum_denom +=Gs_values[distance_pq]*Gc_values[abs(p-q)];
             }
           }
         }
       }
-      imd.at<uchar>(pi,pj)=sum_num/sum_denom;
+      imd.ptr<uchar>(pi)[pj]=sum_num/sum_denom;
     }
   }
   imwrite(imdname,imd);
-
+  bilateralFilter(ims,imd_ocv,s_distance,sigma_g,sigma_s,BORDER_DEFAULT);
+  imshow("res_ocv_method",imd_ocv);
+  diff_imd = imd-imd_ocv;
+  imshow("Difference-bilateral-method",diff_imd);
   waitKey(0);
 
 }

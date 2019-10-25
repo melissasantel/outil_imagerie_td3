@@ -8,7 +8,7 @@ using namespace cv;
 using namespace std;
 
 double
-computeTreshDistance(int sigma){
+computeTresh(int sigma){
   //This compute the distance max two pixels of different patchs
   double distanceMax = (-2)*sigma*sigma*log(0.1);
   return distanceMax;
@@ -24,12 +24,10 @@ process(int sigma, const char* imsname, const char* imdname)
     exit(EXIT_FAILURE);
   }
   cout<< "\n############### exercice : nl-means ##############\n"<<endl;
-  //Read the image and display it
+  //Read the image
   Mat ims = imread(imsname, 0);
-  imshow("Initial",ims);
-
   Size s = ims.size();
-  cout<<"Width : "<<s.height<<"  Height : "<<s.width<<endl;
+  cout<<"Wait a minute.. "<<endl;
 
   //Variables declarations and initialization
   Mat imd(s,CV_8UC1);
@@ -37,9 +35,9 @@ process(int sigma, const char* imsname, const char* imdname)
   int patch_radius = 3;
   //According to author the window tall should be 11*11. We can deduce r=5
   int window_radius = 5;
-  double distance_max = computeTreshDistance(sigma)*(2*patch_radius+1)*(2*patch_radius+1);
-  int patchs_sum, sum_w, sum_w_means, pi, pj, qi, qj, Ip, Iq, nb_in_patch=0;
-  double w;
+  double distance_max = computeTresh(sigma)*(2*patch_radius+1)*(2*patch_radius+1);
+  int patchs_sum, pi, pj, qi, qj, Ip, Iq, nb_in_patch=0;
+  double w, sum_w, sum_w_means;
 
   for(int i=0; i<s.height; i++){
     for(int j=0; j<s.width; j++){
@@ -58,8 +56,8 @@ process(int sigma, const char* imsname, const char* imdname)
             for(int u=-patch_radius; u<=patch_radius; u++){
               for(int v=-patch_radius; v<=patch_radius; v++){
                 if(qi+u>=0 && qj+v>=0 && qi+u<s.height && qj+v<s.width){
-                    Ip = ims.at<uchar>(pi+u,pj+v);
-                    Iq = ims.at<uchar>(qi+u,qj+v);
+                    Ip = ims.ptr<uchar>(pi+u)[pj+v];
+                    Iq = ims.ptr<uchar>(qi+u)[qj+v];
                     patchs_sum +=(Ip-Iq)*(Ip-Iq);
                     nb_in_patch+=1;
                 }
@@ -68,17 +66,15 @@ process(int sigma, const char* imsname, const char* imdname)
             if(patchs_sum <= distance_max){
               w = exp((-patchs_sum/nb_in_patch)/(2*sigma*sigma));
               sum_w += w;
-              sum_w_means+=w*ims.at<uchar>(qi,qj);
+              sum_w_means+=w*ims.ptr<uchar>(qi)[qj];
             }
           }
         }
       }
-      imd.at<uchar>(pi,pj)=sum_w_means/sum_w;
+      imd.ptr<uchar>(pi)[pj]=sum_w_means/sum_w;
     }
   }
-  imshow(imdname,imd);
   imwrite(imdname,imd);
-  waitKey(0);
 }
 
 void
