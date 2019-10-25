@@ -61,7 +61,7 @@ process(int sigma_s, int sigma_g, const char* imsname, const char* imdname)
       sum_denom =0;
       pi=i;
       pj=j;
-        //Retrieve the pixel p neighbors coordinates
+      //Retrieve the pixel p neighbors coordinates
       for(int l=-s_distance; l<=s_distance; l++){
         for(int m=-s_distance; m<=s_distance; m++){
           if(i+l>=0 && j+m>=0 && i+l<s.height && j+m<s.width){
